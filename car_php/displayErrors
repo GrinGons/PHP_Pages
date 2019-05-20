@@ -1,0 +1,21 @@
+<?php
+
+function displayErrors($errs)
+{
+    echo "<div>\n";
+    echo "<h3> Containing errors</h3>\n";
+    echo "<ul>\n";
+    foreach ($errs as $err) {
+        echo '<li>' . $err . "</li>\n";
+    }
+    echo "</ul>\n";
+    echo "</div>\n";
+?>
+    <br>
+    <form>
+	<input type="submit" name="back" value="Back">
+	<input type="submit" name="next" value="Next">
+	</form>
+<?php
+}
+?>  
