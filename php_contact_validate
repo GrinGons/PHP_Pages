@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>     
+<head>
+	<title>Contact form</title>
+</head>
+<style> 
+    .error {color: #FF0000;} 
+</style>
+<body>
+<div>
+  <h4>Contact form</h4>
+<?php function form_1($first_name, $last_name, $email, $phone){ ?>
+    <form method="POST" action="./lab4_kunho.php">
+        <label>First Name</label>
+        <input type="text" size="30" maxlength="50" name="f_name"></input>
+        <br>
+        <label>Last Name</label>
+        <input type="text" size="30" maxlength="50" name="l_name"></input>
+        <br>
+        <label>Email</label>
+        <input type="text" size="30" maxlength="128" name="email"></input>
+        <input type="radio" name="email_P" value="0">non personal</input>
+        <input type="radio" name="email_P" value="1">personal</input>
+        <br>
+        <label>Phone</label>
+        <input type="text" size="30" maxlength="20" name="phone"></input>
+        <input type="radio" name="phone_P" value="0">non personal</input>
+        <input type="radio" name="phone_P" value="1">personal</input>
+        <br>
+        <input type="submit" value="Save"/>
+	</form>
+<?php } ?>
+</div>
+	<pre>
+<?php if ($_SERVER['REQUEST_METHOD'] == 'POST'){
+    ?> </pre>
+<?php
+    $error_msg = validate_fields();
+	if (count($error_msg) > 0){
+		display_error($error_msg);
+	} else {
+        display_success();
+        save_data();
+	}
+} else { 
+	form_1("", "", "", "");
+} ?> 
+
+</body>
+</html>
+
+<?php function validate_fields(){
+	$error_msg = array();
+	
+    if (!isset($_POST['f_name'])){
+        $error_msg[] = "firstname field not defined";
+      } else if (isset($_POST['f_name'])){
+        $first_name = trim($_POST['f_name']);
+          if (empty($_POST["f_name"])) {
+            $error_msg[] = "First Name is required";
+          } else {
+            if (strlen($first_name) >  50){
+                $error_msg[] = "The Name field contains too many characters";
+            } } }
+
+      if (!isset($_POST['l_name'])){
+        $error_msg[] = "lastname field not defined";
+      } else if (isset($_POST['l_name'])){
+        $last_name = trim($_POST['l_name']);
+        if (empty($_POST["l_name"])) {
+          $error_msg[] = "Last Name is required";
+        } else {
+          if (strlen($last_name) >  50){
+              $error_msg[] = "The Name field contains too many characters";
+          } } }  
+
+      if (!isset($_POST['email'])){
+        $error_msg[] = "email field not defined";
+      } else if (isset($_POST['email'])){
+        $email = trim($_POST['email']);
+        if (empty($_POST["email"])) {
+          $error_msg[] = "Email is required";
+        } else {
+          if (strlen($email) >  125){
+            $error_msg[] = "The email field contains too many characters"; 
+          } } }
+      
+      if (!isset($_POST['email_P'])){
+            $error_msg[] = "personal email field not defined";
+      }
+      
+      if (!isset($_POST['phone'])){
+        $error_msg[] = "phone field not defined";
+      } else if (isset($_POST['phone'])){
+        $phone = trim($_POST['phone']);
+      if (empty($_POST["phone"])) {
+        $error_msg[] = "phone is required";
+      } else {
+        if (strlen($phone) >  20){
+            $error_msg[] = "The phone field contains too many characters"; 
+          } } }
+    
+      if (!isset($_POST['phone_P'])){
+            $error_msg[] = "Phone personal field not defined";
+        }
+        if (count($error_msg) == 0){
+            $_POST['f_name'] = $first_name;
+            $_POST['l_name'] = $last_name;
+            $_POST['email'] = $email;
+            $_POST['email_P'] ;
+            $_POST['phone'] = $phone;
+            $_POST['phone_P'] ;
+        }
+        return $error_msg;
+} 
+?>
+
+<?php function display_error($error_msg){
+    echo "<br>\n";
+    echo "<p>\n";
+	foreach($error_msg as $v){
+        echo "<span class='error'>".$v."</span><br>";
+	}
+	echo "</p>\n";
+} ?>
+
+<?php function display_success(){ ?>
+	<h2>Success</h2>
+	<p> The input data is valid</p>
+<?php } ?>
+
+<?php
+function save_data(){
+    $db_conn = new mysqli('localhost', 'lamp1user', '!Lamp1!', 'demo');
+    
+    if ($db_conn->connect_errno) {
+        printf ("Could not connect to database server".$db_host."\n Error: ".$db_conn->connect_errno ."\n Report: ".$db_conn->connect_error."\n");
+    }
+      $fName = $db_conn->real_escape_string($_POST['f_name']);
+      $lName = $db_conn->real_escape_string($_POST['l_name']);
+      $email = $db_conn->real_escape_string($_POST['email']);
+      $phone = $db_conn->real_escape_string($_POST['phone']);
+      $emailP = $_POST['email_P'];
+      $phoneP = $_POST['phone_P'];
+
+    $qry = "INSERT INTO lab4 SET first_name='$fName', last_name='$lName', email='$email', email_personal='$emailP', phone='$phone', phone_personal='$phoneP';";
+    
+    echo "<p>$qry</p>";
+    $db_conn->query($qry);
+    $db_conn->close();
+}
+?>
