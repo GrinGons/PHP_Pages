@@ -1,0 +1,21 @@
+<?php
+
+function saveData($db_conn)
+{
+    foreach ($_SESSION['carName'] as $carN) { //to make multiple param
+    $carY='year_'.$carN;
+    $carC='colr_'.$carN;
+
+        $stmt = $db_conn->prepare('INSERT INTO proj_ex (car_sl, year_r, colr_c) VALUES (?, ?, ?)');
+        $stmt->bind_param('sis', $car_sl, $year_r, $colr_c);
+
+        $car_sl = $carN;
+        $year_r = $_SESSION[$carY];
+        $colr_c = $_SESSION[$carC];
+
+        $stmt->execute();
+    }
+
+    $stmt->close();
+}
+
