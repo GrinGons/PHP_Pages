@@ -1,0 +1,168 @@
+<?php 
+	session_start();	
+?>
+<html>
+<head>
+	<title>INFO-3106 Lab 6 18F</title>
+</head>
+<style> 
+    .error {color: #FF0000;} 
+</style>
+<body>
+	<h2>INFO-3106 Lab 6 18F</h2>
+	
+<?php 
+	if ($_SERVER['REQUEST_METHOD'] == 'POST'){
+		$error_msg = validate_fields();
+		if (count($error_msg) > 0){
+			display_error($error_msg);
+			form_1($_POST['name'], $_POST['email'], $_POST['phone']);
+		} else {
+			save_data();
+			display_success();
+		}
+	} else {
+		form_1("", "", "");
+	} 
+?>
+
+</body>
+</html>
+
+<?php function form_1($name, $email, $phone){ ?>
+	<form method="POST" >
+		<label for="name">Name</label>
+		<input type="text" size="20" maxlength="28" id="name" name="name" value="<?php echo $name; ?>">
+		<br>
+		<label for="email">Email</label>
+		<input type="text" size="50" maxlength="125" id="email" name="email" value="<?php echo $email; ?>">
+		<br>
+		<label for="phone">Phone</label>
+		<input type="text" size="15" maxlength="25" id="phone" name="phone" value="<?php echo $phone; ?>">
+		<br>
+		<input type="submit" value="Submit"/>
+
+	</form>
+<?php } ?>
+
+<?php function validate_fields(){
+	$error_msg = array();
+	if (!isset($_POST['name'])){
+
+		$error_msg[] = "Name field not defined.\n";
+
+	} else if (isset($_POST['name'])){
+
+		$name = trim($_POST['name']);
+		if (empty($name)){
+
+			$error_msg[] = "The Name field is empty.\n";
+
+		} else {
+			if (strlen($name) >  25){
+
+				$error_msg[] = "The Name field contains too many characters.\n";
+			}
+		}
+	}
+
+	if (!isset($_POST['email'])){	//-----------------------email
+		$error_msg[] = "email field not defined";
+
+	} else if (isset($_POST['email'])){
+
+		$email = trim($_POST['email']);
+		$emailArray = array();
+		$em_pMatch = preg_match("/([a-zA-Z0-9][a-zA-Z0-9_\-\.]*)@([a-zA-Z0-9][a-zA-Z0-9\-\.]*)\.([a-zA-Z0-9][a-zA-Z0-9\-\.]*)/", $email, $emailArray); 
+
+		if (empty($email)){
+			$error_msg[] = "The email field is empty.\n";
+
+			} else if(strlen($email) > 125){
+
+					$error_msg[] = "The email field contains too many characters.\n";
+
+			} else if(!$em_pMatch){
+
+					$error_msg[] = "The email format is not applicable.\n";
+
+			} else if (!ctype_lower($emailArray[1]) || !ctype_lower($emailArray[2]) || !ctype_lower($emailArray[3])) { 
+
+				$error_msg[] = "The Email string must be lowercase letters.\n";
+
+				} 
+			} 
+
+
+	if (!isset($_POST['phone'])){	//-----------------------phone
+		$error_msg[] = "phone field not defined";
+	} else if (isset($_POST['phone'])){
+		$phone = trim($_POST['phone']);
+
+		if (empty($phone)){
+
+			$error_msg[] = "The phone field is empty.\n";
+
+		} else if (strlen($phone) >  20){
+
+				$error_msg[] = "The phone field contains too many characters.\n";
+
+			} else {
+				$phN = preg_match("/([2-9][\d]{2}-|\([2-9][\d]{2}\)|\1\([2-9][\d]{2}\)|\+\1-[2-9][\d]{2}-)[2-9][\d]{2}-[\d]{4}\b/", $phone);
+				if($phN == 0){
+
+					$error_msg[] = "The phone number is not applicable.\n";
+			}
+		}
+	}
+
+	if (count($error_msg) == 0){
+		$_SESSION['name'] = $name;
+		$_SESSION['email'] = $email;
+		$_SESSION['phone'] = $phone;
+	}
+	return $error_msg;
+} ?>
+
+<?php function display_error($error_msg){
+	echo "<p>\n";
+	foreach($error_msg as $v){
+		echo "<span class='error'>".$v."</span><br>\n";
+	} 
+		echo "</p>\n";
+} ?>
+
+<?php function display_success(){ ?>
+	<h2>Success</h2>
+	<h4>Session data:</h4>
+	<pre> <?php var_dump($_SESSION); ?> <pre>
+<?php } ?>
+
+<?php
+function save_data(){
+	$dbhost = "localhost";
+	$dbuser = "lamp1user";
+	$dbpw   = "!Lamp1!";
+	$dbdb   = "demo";
+
+	$db_conn = new mysqli($dbhost, $dbuser, $dbpw, $dbdb);
+		if ($db_conn->connect_errno) {
+			printf ("Could not connect to database server".$dbhost
+				."\n Error: ".$db_conn->connect_errno 
+				."\n Report: ".$db_conn->connect_error."\n");
+		}
+		$name = $db_conn->real_escape_string($_SESSION['name']);
+		$email = $db_conn->real_escape_string($_SESSION['email']);
+		$phone = $db_conn->real_escape_string($_SESSION['phone']);
+
+		$qry = "INSERT INTO lab6 (name, email, phone) values('".$name."', '".$email."', '".$phone."');";
+		$db_conn->query($qry);
+		if($db_conn->errno != 0){
+			die("Error running database query \n  $qry "
+				."\n Error ".$db_conn->errno."\n Error Message ".$db_conn->error."\n\n");
+		}
+
+
+		$db_conn->close();
+	}
+?>
