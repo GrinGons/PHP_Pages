@@ -1,0 +1,190 @@
+
+<?php
+
+function form1F(){	
+
+	$_SESSION['add'] = 1;
+	$carN = [];
+
+	if(isset($_POST['carName'])){ 
+		$carN = $_POST['carName']; 
+	} 
+	else if(isset($_SESSION['carName'])){ 
+		$carN = $_SESSION['carName']; 
+	}
+?>
+	<h3>Select Vehicle Models</h3><br>
+	<form method="POST">
+		<input type="checkbox" name="carName[]" id="toyota" value="toyota" <?php echo carN_chk($carN, 'toyota') ? 'checked' : '' ?>>
+		<label for="carName">toyota</label>
+		<input type="checkbox" name="carName[]" id="mazda" value="mazda" <?php echo carN_chk($carN, 'mazda') ? 'checked' : '' ?>>
+		<label for="carName">mazda</label>
+		<input type="checkbox" name="carName[]" id="honda" value="honda" <?php echo carN_chk($carN, 'honda') ? 'checked' : '' ?>>
+		<label for="carName">honda</label>
+		<br><br>
+
+		<input type="submit" name="next" value="Next">
+	</form><br>
+
+<?php 
+}
+
+function carN_chk($carN, $v){
+	foreach ($carN as $cn) {
+		if($cn == $v){ //if(getCName($cn) == $v){
+			return true;
+		}
+	} return false;
+}
+
+
+function validF1(){
+		$errs=[];
+
+		if(!isset($_POST['carName'])){
+			$errs[]="emtpy";
+		} else {
+			$carN = $_POST['carName'];
+
+			if(sizeof($carN)== 0){	// count ??
+				$errs[]="not choosen";
+			} else {
+				$_POST['carName']=$carN;
+			}
+		} return $errs;
+	}
+
+function f1Tsess(){
+	$_SESSION['carName']=$_POST['carName'];
+}
+
+
+
+function form2F(){	//-------------------------------------
+
+	$_SESSION['add'] = 2;
+
+	$carY_arry = [];
+	$carC_arry = [];
+
+	foreach ($_SESSION['carName'] as $carN) { //to make multiple param
+		$carY='year_'.$carN;
+		$carC='colr_'.$carN;
+
+		if(isset($_POST[$carY])){ 
+			$carY_arry[$carY] = $_POST[$carY];
+		} else if(isset($_SESSION[$carY])){ 
+			$carY_arry[$carY] = $_SESSION[$carY]; }
+
+		if(isset($_POST[$carC])){ 
+			$carC_arry[$carC] = $_POST[$carC];
+		} else if(isset($_SESSION[$carC])){ 
+			$carC_arry[$carC] = $_SESSION[$carC]; }
+	}
+?>
+    <h3>Select Vehicle Details</h3>
+	<form method="POST">
+<?php
+	foreach ($_SESSION['carName'] as $carN) { //to make multiple param
+		$carY='year_'.$carN;
+		$carC='colr_'.$carN;
+?>
+		<h3><?= $carN ?></h3>
+		<label>Choose year</label><br>
+		<input type="radio" name="<?=$carY?>" id="<?=$carY?>" value="2016" <?php echo carY_chk($carY_arry, $carY, 2016) ? 'checked' : '' ?>>
+		<label for="<?=$carY?>">2016</label>
+		<input type="radio" name="<?=$carY?>" id="<?=$carY?>" value="2017" <?php echo carY_chk($carY_arry, $carY, 2017) ? 'checked' : '' ?>>
+		<label for="<?=$carY?>">2017</label>
+		<input type="radio" name="<?=$carY?>" id="<?=$carY?>" value="2018" <?php echo carY_chk($carY_arry, $carY, 2018) ? 'checked' : '' ?>>
+		<label for="<?=$carY?>">2018</label>
+		<br><br>
+
+		<label>Choose Color</label><br>
+		<select id="<?=$carC?>" name="<?=$carC?>">
+			<option value="" selected disabled <?= carC_chk($carC_arry, $carC, '') ? 'selected' : '' ?>>choose</option>
+	   		<option value="red" <?php echo carC_chk($carC_arry, $carC, 'red') ? 'selected' : '' ?>>Red</option>
+			<option value="blue" <?php echo carC_chk($carC_arry, $carC, 'blue') ? 'selected' : '' ?>>Blue</option>
+			<option value="black" <?php echo carC_chk($carC_arry, $carC, 'black') ? 'selected' : '' ?>>Black</option>
+		</select>
+		<br><br>
+
+<?php } ?><br><br>
+	<input type="submit" name="back" value="Back">
+	<input type="submit" name="next" value="Next">
+	</form><br>
+
+<?php 
+}
+
+function carY_chk($carY_arry, $carY, $Yv){
+	if(empty($carY_arry)){
+		return false;
+	} else if(!isset($carY_arry[$carY])){
+		return false;
+	} else if(($carY_arry[$carY]) == $Yv){
+		return true;
+	}
+}
+
+function carC_chk($carC_arry, $carC, $Cv){
+	if(empty($carC_arry)){
+		return false;
+	} else if(!isset($carC_arry[$carC])){
+		return false;
+	} else if(($carC_arry[$carC]) == $Cv){
+		return true;
+	}
+}
+
+function validF2(){
+		$errs=[];
+		$index = 0;
+
+	foreach ($_SESSION['carName'] as $carN) {
+		$carY='year_'.$carN;
+		$carC='colr_'.$carN;
+
+		if(!isset($_POST[$carY])){
+			$errs[]="year of ".$carN." emtpy";
+		} else {
+
+			$carY = $_POST[$carY];
+			if(!(($carY=='2016') || ($carY=='2017') || ($carY == '2018'))){
+				$errs[]= "year of ".$carN." not choosen";
+			} 
+		} 
+
+		if(count($errs)==0){
+			$_POST[$carY]=$carY;
+		}
+
+		if(!isset($_POST[$carC])){
+			$errs[]="color of ".$carN." emtpy";
+		} else {
+			$carC = $_POST[$carC];
+
+			if(!(($carC=='red') || ($carC=='blue') || ($carC == 'black'))){
+				$errs[]= "color of ".$carN." not choosen";
+			} 
+		}
+
+		if(count($errs)==0){
+			$_POST[$carC]=$carC;
+		}
+
+	} // foreach
+	return $errs;  
+}
+
+function f2Tsess(){
+	$index = 0;
+	foreach ($_SESSION['carName'] as $carN) { //to make multiple param
+		$carY='year_'.$carN;
+		$carC='colr_'.$carN;
+
+		$_SESSION[$carY]=$_POST[$carY];
+		$_SESSION[$carC]=$_POST[$carC];
+	}
+}
+
+?>
